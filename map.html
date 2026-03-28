@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>多伦多公寓地图总览</title>
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+>
+<style>
+  :root {
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --ink: #213547;
+    --muted: #667085;
+    --brand: #6c5ce7;
+    --brand-soft: #efeaff;
+    --good: #00b894;
+    --mid: #f39c12;
+    --low: #d63031;
+    --line: #e7eaf3;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif; color: var(--ink); background: radial-gradient(circle at top left, #f5f0ff, #f4f6fb 36%, #edf3ff 100%); }
+  a { color: inherit; }
+
+  .hero {
+    padding: 36px 24px 24px;
+    background: linear-gradient(135deg, #5a4ae3, #8f86ff);
+    color: white;
+  }
+
+  .hero-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  .hero h1 {
+    margin: 0 0 10px;
+    font-size: 30px;
+    line-height: 1.1;
+  }
+
+  .hero p {
+    margin: 0;
+    max-width: 760px;
+    font-size: 15px;
+    line-height: 1.7;
+    opacity: 0.92;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .hero-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .hero-link.primary {
+    background: white;
+    color: var(--brand);
+  }
+
+  .hero-link.ghost {
+    border: 1px solid rgba(255,255,255,0.35);
+    color: white;
+  }
+
+  .layout {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .panel {
+    background: rgba(255,255,255,0.84);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.9);
+    border-radius: 20px;
+    box-shadow: 0 18px 60px rgba(58, 74, 109, 0.10);
+  }
+
+  .sidebar {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 720px;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .intro {
+    background: linear-gradient(180deg, #ffffff, #f8f7ff);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px;
+  }
+
+  .intro h2 {
+    margin: 0 0 8px;
+    font-size: 17px;
+    color: var(--brand);
+  }
+
+  .intro p,
+  .intro li {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #465467;
+  }
+
+  .intro ul {
+    padding-left: 18px;
+    margin: 8px 0 0;
+  }
+
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: auto;
+    padding-right: 4px;
+  }
+
+  .list-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--brand);
+    border-radius: 16px;
+    padding: 14px 14px 12px;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  }
+
+  .list-card:hover,
+  .list-card.active {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 34px rgba(76, 80, 168, 0.12);
+    border-color: #d9d2ff;
+  }
+
+  .list-card.top { border-left-color: var(--good); }
+  .list-card.good { border-left-color: var(--brand); }
+  .list-card.mid { border-left-color: var(--mid); }
+  .list-card.low { border-left-color: var(--low); }
+
+  .list-rank {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--brand-soft);
+    color: var(--brand);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .list-card.top .list-rank {
+    background: #ddfaef;
+    color: #038f67;
+  }
+
+  .list-title {
+    margin: 10px 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .list-meta,
+  .list-score {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .map-shell {
+    position: relative;
+    min-height: 720px;
+    overflow: hidden;
+  }
+
+  #map {
+    width: 100%;
+    height: 100%;
+    min-height: 720px;
+    border-radius: 20px;
+  }
+
+  .map-overlay {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 500;
+    width: min(320px, calc(100% - 36px));
+    background: rgba(255,255,255,0.94);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.96);
+    border-radius: 18px;
+    box-shadow: 0 20px 50px rgba(58, 74, 109, 0.14);
+    padding: 16px;
+  }
+
+  .map-overlay h3 {
+    margin: 0 0 10px;
+    color: var(--brand);
+    font-size: 16px;
+  }
+
+  .map-overlay p {
+    margin: 0 0 8px;
+    color: #4a586b;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 12px;
+    margin-top: 10px;
+  }
+
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .leaflet-popup-content {
+    margin: 14px 14px 12px;
+    min-width: 220px;
+  }
+
+  .popup-rank {
+    display: inline-block;
+    margin-bottom: 8px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--brand-soft);
+    color: var(--brand);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .popup-title {
+    margin: 0 0 6px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .popup-body {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #4a586b;
+  }
+
+  @media (max-width: 980px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+
+    .sidebar,
+    .map-shell,
+    #map {
+      min-height: 560px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hero { padding: 28px 16px 20px; }
+    .hero h1 { font-size: 24px; }
+    .layout { padding: 16px; }
+    .sidebar { padding: 14px; }
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .map-overlay { position: static; width: 100%; margin: 12px 12px 0; }
+  }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="hero-inner">
+    <h1>🗺️ 多伦多公寓地图总览</h1>
+    <p>把 10 套公寓同时放到一张地图里，方便直观看出它们和地铁、商圈以及彼此之间的大致空间关系。点击左侧卡片或地图标记，都可以查看单套信息。</p>
+    <div class="hero-actions">
+      <a class="hero-link primary" href="./index.html">← 返回报告页</a>
+    </div>
+  </div>
+</header>
+
+<main class="layout">
+  <aside class="panel sidebar">
+    <section class="stat-grid">
+      <div class="stat">
+        <div class="stat-label">房源总数</div>
+        <div class="stat-value">10</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">推荐梯队</div>
+        <div class="stat-value">Top 5</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">地铁最方便</div>
+        <div class="stat-value">Yorkdale</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">综合首选</div>
+        <div class="stat-value">The Rocket</div>
+      </div>
+    </section>
+
+    <section class="intro">
+      <h2>使用说明</h2>
+      <p>地图坐标基于公开地址做了定位，适合看区域分布和通勤大致关系，不代表精确到单元门牌入口。</p>
+      <ul>
+        <li>绿色：强烈推荐 / 综合最优</li>
+        <li>紫色：推荐</li>
+        <li>橙色：一般推荐</li>
+        <li>红色：不推荐</li>
+      </ul>
+    </section>
+
+    <section class="list" id="condo-list"></section>
+  </aside>
+
+  <section class="panel map-shell">
+    <div id="map" aria-label="公寓地图"></div>
+    <div class="map-overlay">
+      <h3>地图说明</h3>
+      <p>当前地图覆盖 North York 一带的 10 套候选公寓。默认会自动缩放到能同时看到全部标记的位置。</p>
+      <p>想快速看某一套，直接点左侧卡片；地图会自动飞到对应位置并弹出详情。</p>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#00b894"></span>强烈推荐</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#6c5ce7"></span>推荐</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#f39c12"></span>一般推荐</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#d63031"></span>不推荐</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+<script>
+  const condos = [
+    { rank: 1, medal: "🥇", tier: "top", name: "The Rocket #1002", address: "38 Monte Kwinter Ct", area: "Clanton Park", price: "~$2,100–2,550", score: 8.5, lat: 43.7334555, lng: -79.4475573 },
+    { rank: 2, medal: "🥈", tier: "good", name: "Spectrum #1006", address: "28 Harrison Garden Blvd", area: "Willowdale East", price: "~$2,300", score: 8.0, lat: 43.7568657, lng: -79.4088304 },
+    { rank: 3, medal: "🥉", tier: "good", name: "Yorkdale Condos #322", address: "160 Flemington Rd", area: "Yorkdale / Glen Park", price: "~$1,800–1,950", score: 7.8, lat: 43.7229183, lng: -79.4481382 },
+    { rank: 4, medal: "⭐", tier: "good", name: "Yorkland Herons Hill #1004", address: "275 Yorkland Rd", area: "Henry Farm", price: "~$1,900+", score: 8.0, lat: 43.7748192, lng: -79.3369898 },
+    { rank: 5, medal: "⭐", tier: "good", name: "Aria #717", address: "10 Bloorview Pl", area: "Don Valley Village", price: "~$2,800+", score: 8.0, lat: 43.7739867, lng: -79.3595047 },
+    { rank: 6, medal: "⭐", tier: "mid", name: "Plaza Royale #312", address: "872 Sheppard Ave W", area: "Bathurst Manor", price: "$2,300", score: 7.3, lat: 43.7523149, lng: -79.4543288 },
+    { rank: 7, medal: "⭐", tier: "mid", name: "Emerald City #1401", address: "38 Forest Manor Rd", area: "Henry Farm", price: "~$2,725–3,200", score: 7.3, lat: 43.7719098, lng: -79.3445377 },
+    { rank: 8, medal: "⭐", tier: "mid", name: "Broadway II #2801", address: "155 Beecroft Rd", area: "Yonge / Sheppard", price: "~$2,499+", score: 6.8, lat: 43.7661991, lng: -79.4151195 },
+    { rank: 9, medal: "⭐", tier: "mid", name: "Liv Lofts #713", address: "75 The Donway W", area: "Banbury / Don Mills", price: "~$2,000+", score: 6.8, lat: 43.7327510, lng: -79.3456661 },
+    { rank: 10, medal: "⚠️", tier: "low", name: "Stonecastle #104", address: "2615 Keele St", area: "Maple Leaf", price: "~$2,200", score: 5.8, lat: 43.7197825, lng: -79.4803700 }
+  ];
+
+  const tierColor = {
+    top: "#00b894",
+    good: "#6c5ce7",
+    mid: "#f39c12",
+    low: "#d63031"
+  };
+
+  const map = L.map("map", { zoomControl: true, scrollWheelZoom: true });
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(map);
+
+  const bounds = L.latLngBounds([]);
+  const cardsByRank = new Map();
+  const markersByRank = new Map();
+
+  function popupHtml(item) {
+    return `
+      <div class="popup-rank">${item.medal} #${item.rank}</div>
+      <div class="popup-title">${item.name}</div>
+      <div class="popup-body">
+        <strong>${item.address}</strong><br>
+        区域：${item.area}<br>
+        月租：${item.price}<br>
+        综合分：${item.score}
+      </div>
+    `;
+  }
+
+  function setActive(rank) {
+    cardsByRank.forEach((card, key) => {
+      card.classList.toggle("active", key === rank);
+    });
+
+    markersByRank.forEach((marker, key) => {
+      const color = tierColor[marker.options.tier];
+      marker.setStyle({
+        radius: key === rank ? 12 : 9,
+        weight: key === rank ? 3 : 2,
+        fillOpacity: key === rank ? 0.95 : 0.85,
+        color,
+        fillColor: color
+      });
+    });
+  }
+
+  condos.forEach((item) => {
+    bounds.extend([item.lat, item.lng]);
+
+    const marker = L.circleMarker([item.lat, item.lng], {
+      radius: 9,
+      weight: 2,
+      color: tierColor[item.tier],
+      fillColor: tierColor[item.tier],
+      fillOpacity: 0.85,
+      tier: item.tier
+    }).addTo(map);
+
+    marker.bindPopup(popupHtml(item));
+    marker.on("click", () => setActive(item.rank));
+    markersByRank.set(item.rank, marker);
+
+    const card = document.createElement("article");
+    card.className = `list-card ${item.tier}`;
+    card.innerHTML = `
+      <div class="list-rank">${item.medal} #${item.rank}</div>
+      <div class="list-title">${item.name}</div>
+      <div class="list-meta">${item.address} · ${item.area}</div>
+      <div class="list-score">月租 ${item.price} · 综合分 ${item.score}</div>
+    `;
+
+    card.addEventListener("click", () => {
+      setActive(item.rank);
+      map.flyTo([item.lat, item.lng], 14, { duration: 0.8 });
+      marker.openPopup();
+    });
+
+    cardsByRank.set(item.rank, card);
+    document.getElementById("condo-list").appendChild(card);
+  });
+
+  map.fitBounds(bounds.pad(0.12));
+  setActive(1);
+  markersByRank.get(1).openPopup();
+</script>
+</body>
+</html>
