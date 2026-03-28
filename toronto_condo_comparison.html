@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>多伦多公寓对比分析报告</title>
+<style>
+  body { font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif; background: #f5f6fa; color: #2d3436; margin: 0; padding: 0; }
+  .header { background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; padding: 36px 40px 28px; }
+  .header h1 { margin: 0 0 8px; font-size: 26px; }
+  .header p { margin: 0; opacity: 0.9; font-size: 14px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+
+  .summary-box { background: white; border-radius: 12px; padding: 22px 28px; margin-bottom: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+  .summary-box h2 { margin: 0 0 14px; font-size: 17px; color: #6c5ce7; }
+  .tags { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .tag { background: #f0eeff; color: #6c5ce7; border-radius: 20px; padding: 4px 14px; font-size: 13px; }
+  .tag.warn { background: #fff3e0; color: #e67e22; }
+
+  .card { background: white; border-radius: 12px; padding: 24px 28px; margin-bottom: 22px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); border-left: 5px solid #ccc; }
+  .card.top { border-left-color: #00b894; }
+  .card.good { border-left-color: #6c5ce7; }
+  .card.mid { border-left-color: #fdcb6e; }
+  .card.low { border-left-color: #d63031; }
+
+  .card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+  .card-title { font-size: 18px; font-weight: bold; margin: 0; }
+  .card-subtitle { font-size: 13px; color: #636e72; margin: 4px 0 0; }
+  .badge { display: inline-block; font-size: 12px; font-weight: bold; padding: 3px 10px; border-radius: 20px; }
+  .badge.top { background: #d4efdf; color: #1e8449; }
+  .badge.good { background: #eaecf8; color: #6c5ce7; }
+  .badge.mid { background: #fef9e7; color: #d4ac0d; }
+  .badge.low { background: #fce4e4; color: #d63031; }
+
+  .scores { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; }
+  .score-item { flex: 1 1 130px; background: #f8f9fc; border-radius: 8px; padding: 10px 14px; text-align: center; }
+  .score-item .label { font-size: 12px; color: #636e72; margin-bottom: 4px; }
+  .score-item .value { font-size: 20px; font-weight: bold; }
+  .score-item .value.s10 { color: #00b894; }
+  .score-item .value.s9 { color: #00cec9; }
+  .score-item .value.s8 { color: #6c5ce7; }
+  .score-item .value.s7 { color: #fdcb6e; }
+  .score-item .value.s6 { color: #e17055; }
+  .score-item .value.s5 { color: #d63031; }
+
+  .total-score { font-size: 15px; font-weight: bold; margin: 0 0 12px; }
+  .stars { color: #f39c12; letter-spacing: 2px; }
+
+  .info-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  .info-chip { background: #f0f4f8; border-radius: 6px; padding: 4px 10px; font-size: 12px; color: #4a5568; }
+  .info-chip.green { background: #d4efdf; color: #1e8449; }
+  .info-chip.red { background: #fce4e4; color: #c0392b; }
+  .info-chip.yellow { background: #fef9e7; color: #c9ae00; }
+
+  .pros-cons { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+  .pros, .cons { flex: 1 1 200px; }
+  .pros h4 { color: #00b894; margin: 0 0 6px; font-size: 13px; }
+  .cons h4 { color: #d63031; margin: 0 0 6px; font-size: 13px; }
+  .pros ul, .cons ul { margin: 0; padding-left: 16px; font-size: 13px; line-height: 1.8; }
+
+  .verdict { background: #f8f9fc; border-radius: 8px; padding: 12px 16px; margin-top: 14px; font-size: 13px; border-left: 3px solid #6c5ce7; }
+  .verdict strong { color: #6c5ce7; }
+
+  .ranking-table { background: white; border-radius: 12px; padding: 24px 28px; margin-bottom: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+  .ranking-table h2 { margin: 0 0 16px; font-size: 17px; color: #6c5ce7; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #6c5ce7; color: white; padding: 10px 8px; text-align: center; }
+  th:first-child { text-align: left; border-radius: 6px 0 0 0; }
+  th:last-child { border-radius: 0 6px 0 0; }
+  td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #f0f0f0; }
+  td:first-child { text-align: left; font-weight: 600; }
+  tr:hover td { background: #f8f9fc; }
+  .rank1 td { background: #fffbea; }
+  .rank2 td { background: #f0fff4; }
+  .rank3 td { background: #f0f4ff; }
+
+  .footer { text-align: center; font-size: 12px; color: #b2bec3; padding: 20px; }
+
+  @media (max-width: 600px) {
+    .header { padding: 20px; }
+    .container { padding: 14px 10px; }
+    .card { padding: 16px; }
+    .scores { gap: 8px; }
+    .score-item { flex: 1 1 100px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏠 多伦多公寓租房对比分析报告</h1>
+  <p>专为中国女性租户 · 有车(斯巴鲁) · 有两只猫 · 共10套单元横向评比</p>
+</div>
+
+<div class="container">
+
+  <!-- 租房须知 -->
+  <div class="summary-box">
+    <h2>📋 分析条件 & 注意事项</h2>
+    <div class="tags">
+      <span class="tag">🚗 需要停车位</span>
+      <span class="tag">🐱 允许养猫（两只）</span>
+      <span class="tag">👩 单人女性住户，安全性优先</span>
+      <span class="tag">💰 综合性价比考量</span>
+      <span class="tag warn">⚠️ 养猫前须向房东确认pet policy</span>
+      <span class="tag warn">⚠️ 停车位需确认是否包含在租金中</span>
+    </div>
+    <p style="font-size:13px; color:#636e72; margin:8px 0 0">数据来源：Condos.ca、Strata.ca、Zolo.ca、CondoReviews.ca、Toronto Police Crime Data、AreaVibes.com等。部分数据受限于信息可及性，建议实地查看前与房东/经纪确认。</p>
+  </div>
+
+  <!-- 综合排名总览表 -->
+  <div class="ranking-table">
+    <h2>📊 综合排名总览</h2>
+    <table>
+      <tr>
+        <th>排名</th>
+        <th>公寓</th>
+        <th>地址</th>
+        <th>楼层</th>
+        <th>参考月租</th>
+        <th>性价比</th>
+        <th>居住体验</th>
+        <th>安全性</th>
+        <th>交通</th>
+        <th>养猫</th>
+        <th>停车</th>
+        <th>综合分</th>
+      </tr>
+      <tr class="rank1">
+        <td>🥇 1</td>
+        <td>The Rocket #1002</td>
+        <td>38 Monte Kwinter Ct</td>
+        <td>10F</td>
+        <td>~$2,100–2,550</td>
+        <td>9</td><td>8</td><td>10</td><td>9</td><td>7</td><td>8</td>
+        <td><strong>8.5</strong></td>
+      </tr>
+      <tr class="rank2">
+        <td>🥈 2</td>
+        <td>Spectrum #1006</td>
+        <td>28 Harrison Garden Blvd</td>
+        <td>10F</td>
+        <td>~$2,300</td>
+        <td>9</td><td>9</td><td>8</td><td>8</td><td>7</td><td>7</td>
+        <td><strong>8.0</strong></td>
+      </tr>
+      <tr class="rank3">
+        <td>🥉 3</td>
+        <td>Yorkdale Condos #322</td>
+        <td>160 Flemington Rd</td>
+        <td>3F</td>
+        <td>~$1,800–1,950</td>
+        <td>9</td><td>7</td><td>7</td><td>10</td><td>7</td><td>7</td>
+        <td><strong>7.8</strong></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Yorkland Herons Hill #1004</td>
+        <td>275 Yorkland Rd</td>
+        <td>10F</td>
+        <td>~$1,900+</td>
+        <td>9</td><td>8</td><td>8</td><td>7</td><td>7</td><td>9</td>
+        <td><strong>8.0</strong></td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Aria #717</td>
+        <td>10 Bloorview Pl</td>
+        <td>7F</td>
+        <td>~$2,800+</td>
+        <td>7</td><td>9</td><td>9</td><td>6</td><td>9</td><td>8</td>
+        <td><strong>8.0</strong></td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>Plaza Royale #312</td>
+        <td>872 Sheppard Ave W</td>
+        <td>3F</td>
+        <td>$2,300</td>
+        <td>8</td><td>7</td><td>7</td><td>7</td><td>8</td><td>7</td>
+        <td><strong>7.3</strong></td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>Emerald City #1401</td>
+        <td>38 Forest Manor Rd</td>
+        <td>14F</td>
+        <td>~$2,725–3,200</td>
+        <td>7</td><td>7</td><td>7</td><td>9</td><td>7</td><td>7</td>
+        <td><strong>7.3</strong></td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>Broadway II #2801</td>
+        <td>155 Beecroft Rd</td>
+        <td>28F</td>
+        <td>~$2,499+</td>
+        <td>6</td><td>6</td><td>6</td><td>10</td><td>6</td><td>7</td>
+        <td><strong>6.8</strong></td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td>Liv Lofts #713</td>
+        <td>75 The Donway W</td>
+        <td>7F</td>
+        <td>~$2,000+</td>
+        <td>7</td><td>7</td><td>7</td><td>5</td><td>8</td><td>7</td>
+        <td><strong>6.8</strong></td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>Stonecastle #104</td>
+        <td>2615 Keele St</td>
+        <td>1F</td>
+        <td>~$2,200</td>
+        <td>5</td><td>4</td><td>6</td><td>5</td><td>7</td><td>8</td>
+        <td><strong>5.8</strong></td>
+      </tr>
+    </table>
+    <p style="font-size:12px;color:#b2bec3;margin:10px 0 0">* 综合分为六项均值；Yorkland Herons Hill与Spectrum、Aria综合分并列，按实际情况细分排名。</p>
+  </div>
+
+  <!-- ===== 各单元详细分析 ===== -->
+
+  <!-- 1. The Rocket #1002 -->
+  <div class="card top">
+    <div class="card-header">
+      <div>
+        <p class="card-title">🥇 #1 — The Rocket Condos, Unit 1002</p>
+        <p class="card-subtitle">38 Monte Kwinter Court, North York（Clanton Park / Wilson Heights）</p>
+      </div>
+      <span class="badge top">强烈推荐</span>
+    </div>
+    <div class="info-row">
+      <span class="info-chip">📐 约500–600 sqft（1+1卧）</span>
+      <span class="info-chip">💰 ~$2,100–$2,550/月</span>
+      <span class="info-chip">🏢 第10层 / 共13层</span>
+      <span class="info-chip">📅 2020年竣工（新楼）</span>
+      <span class="info-chip green">🚇 步行至Wilson地铁站</span>
+      <span class="info-chip green">🛡️ 犯罪率低于全国平均40%</span>
+    </div>
+    <div class="scores">
+      <div class="score-item"><div class="label">性价比</div><div class="value s9">9</div></div>
+      <div class="score-item"><div class="label">居住体验</div><div class="value s8">8</div></div>
+      <div class="score-item"><div class="label">安全性</div><div class="value s10">10</div></div>
+      <div class="score-item"><div class="label">交通便利</div><div class="value s9">9</div></div>
+      <div class="score-item"><div class="label">养猫友好</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">停车便利</div><div class="value s8">8</div></div>
+    </div>
+    <div class="total-score">综合评分：<span style="color:#00b894;font-size:20px">8.5 / 10</span></div>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>✅ 优点</h4>
+        <ul>
+          <li>Clanton Park犯罪率全市最低之一，低于全国均值40%</li>
+          <li>2020年新楼，设施现代整洁</li>
+          <li>步行可达Wilson地铁站</li>
+          <li>月租$2,100起，新楼中极具竞争力</li>
+          <li>10层视野良好，不过于高</li>
+          <li>有健身房、派对室、BBQ区、媒体室</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>❌ 注意</h4>
+        <ul>
+          <li>附近餐饮/购物不如Yonge轴丰富</li>
+          <li>非核心地段，去Downtown需乘地铁</li>
+          <li>需确认是否宠物友好（两猫）</li>
+          <li>停车位需确认是否包含或额外费用</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict"><strong>总结：</strong>综合性价比最优选。作为单身女性，Clanton Park的高安全性是最大亮点；新楼设施+地铁直达，月租价格合理。强烈建议优先看此房。</div>
+  </div>
+
+  <!-- 2. Spectrum #1006 -->
+  <div class="card good">
+    <div class="card-header">
+      <div>
+        <p class="card-title">🥈 #2 — Spectrum Condos, Unit 1006</p>
+        <p class="card-subtitle">28 Harrison Garden Blvd, North York（Willowdale East）</p>
+      </div>
+      <span class="badge good">推荐</span>
+    </div>
+    <div class="info-row">
+      <span class="info-chip">📐 511–1591 sqft（多种户型）</span>
+      <span class="info-chip">💰 ~$2,300/月（1卧）</span>
+      <span class="info-chip">🏢 第10层 / 共24层</span>
+      <span class="info-chip">📅 2003年竣工（Menkes开发）</span>
+      <span class="info-chip green">🎳 保龄球道！全套奢华设施</span>
+      <span class="info-chip">🚇 近Yonge地铁线</span>
+    </div>
+    <div class="scores">
+      <div class="score-item"><div class="label">性价比</div><div class="value s9">9</div></div>
+      <div class="score-item"><div class="label">居住体验</div><div class="value s9">9</div></div>
+      <div class="score-item"><div class="label">安全性</div><div class="value s8">8</div></div>
+      <div class="score-item"><div class="label">交通便利</div><div class="value s8">8</div></div>
+      <div class="score-item"><div class="label">养猫友好</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">停车便利</div><div class="value s7">7</div></div>
+    </div>
+    <div class="total-score">综合评分：<span style="color:#6c5ce7;font-size:20px">8.0 / 10</span></div>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>✅ 优点</h4>
+        <ul>
+          <li>设施极其丰富：<strong>2道保龄球</strong>、台球室、图书室、家庭影院、25×40泳池、舞厅、蒸拿浴等</li>
+          <li>位于Willowdale East，华人圈熟悉地带</li>
+          <li>月租约$2,300，性价比极高</li>
+          <li>Menkes知名开发商，建筑质量有保障</li>
+          <li>近Yonge地铁线，生活便利</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>❌ 注意</h4>
+        <ul>
+          <li>楼龄较老（2003年），装修可能旧化</li>
+          <li>设施维护需额外关注</li>
+          <li>华人聚居区竞争激烈，可能较难抢到好单元</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict"><strong>总结：</strong>设施豪华程度在10套里遥遥领先，价格却不贵。如果你喜欢在家附近就能保龄球、游泳、看电影，这是不二之选。楼龄较老是唯一隐患，看房时注意单元状态。</div>
+  </div>
+
+  <!-- 3. Yorkdale Condos #322 -->
+  <div class="card good">
+    <div class="card-header">
+      <div>
+        <p class="card-title">🥉 #3 — The Yorkdale Condos, Unit 322</p>
+        <p class="card-subtitle">160 Flemington Road, North York（Yorkdale / Glen Park）</p>
+      </div>
+      <span class="badge good">推荐</span>
+    </div>
+    <div class="info-row">
+      <span class="info-chip">📐 约363–799 sqft</span>
+      <span class="info-chip">💰 ~$1,800–$1,950/月</span>
+      <span class="info-chip">🏢 第3层 / 共15层</span>
+      <span class="info-chip">📅 2019年竣工（Context开发）</span>
+      <span class="info-chip green">🚇 步行1分钟！Yorkdale地铁站</span>
+      <span class="info-chip green">🛍️ Yorkdale购物中心隔壁</span>
+    </div>
+    <div class="scores">
+      <div class="score-item"><div class="label">性价比</div><div class="value s9">9</div></div>
+      <div class="score-item"><div class="label">居住体验</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">安全性</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">交通便利</div><div class="value s10">10</div></div>
+      <div class="score-item"><div class="label">养猫友好</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">停车便利</div><div class="value s7">7</div></div>
+    </div>
+    <div class="total-score">综合评分：<span style="color:#6c5ce7;font-size:20px">7.8 / 10</span></div>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>✅ 优点</h4>
+        <ul>
+          <li>月租最低之一（$1,800起），省钱效果显著</li>
+          <li>地铁步行仅1分钟，交通无可挑剔</li>
+          <li>Yorkdale Mall近在咫尺，购物极方便</li>
+          <li>2019年较新，有24h礼宾、屋顶露台</li>
+          <li>Allan Expressway近，开车也方便</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>❌ 注意</h4>
+        <ul>
+          <li>单元面积偏小（363 sqft起）</li>
+          <li>3楼较低，隐私感稍弱</li>
+          <li>购物中心旁边噪音/人流可能较多</li>
+          <li>目前无居民评价，风险未知</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict"><strong>总结：</strong>预算有限者首选。租金最便宜且地铁最方便（1分钟）。唯一顾虑是单元面积较小，两只猫和个人物品可能会觉得拥挤，建议确认具体unit #322的面积。</div>
+  </div>
+
+  <!-- 4. Yorkland Herons Hill #1004 -->
+  <div class="card good">
+    <div class="card-header">
+      <div>
+        <p class="card-title">⭐ #4 — Yorkland at Herons Hill, Unit 1004</p>
+        <p class="card-subtitle">275 Yorkland Road, Toronto（Henry Farm）</p>
+      </div>
+      <span class="badge good">推荐（爱车族）</span>
+    </div>
+    <div class="info-row">
+      <span class="info-chip">📐 396–875 sqft</span>
+      <span class="info-chip">💰 ~$1,900+/月</span>
+      <span class="info-chip">🏢 第10层 / 共33层</span>
+      <span class="info-chip">📅 2014年竣工（Monarch开发）</span>
+      <span class="info-chip green">🚗 DVP/401高速近，开车极方便</span>
+      <span class="info-chip">🚌 工作日有班车到Don Mills地铁站</span>
+    </div>
+    <div class="scores">
+      <div class="score-item"><div class="label">性价比</div><div class="value s9">9</div></div>
+      <div class="score-item"><div class="label">居住体验</div><div class="value s8">8</div></div>
+      <div class="score-item"><div class="label">安全性</div><div class="value s8">8</div></div>
+      <div class="score-item"><div class="label">交通便利</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">养猫友好</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">停车便利</div><div class="value s9">9</div></div>
+    </div>
+    <div class="total-score">综合评分：<span style="color:#6c5ce7;font-size:20px">8.0 / 10</span></div>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>✅ 优点</h4>
+        <ul>
+          <li>价格极具性价比（$1,900起）</li>
+          <li>设施齐全：游泳池、Spa、健身房、媒体室、礼宾、安保</li>
+          <li>33层高楼，10层视野开阔</li>
+          <li>Fairview Mall步行可达</li>
+          <li>DVP/401上下班开车极方便，<strong>有车族最爱</strong></li>
+          <li>工作日班车接送地铁</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>❌ 注意</h4>
+        <ul>
+          <li>没有私家车则出行较不便</li>
+          <li>地铁依赖班车（非步行直达）</li>
+          <li>单元面积偏小（最小396 sqft）</li>
+          <li>仅2条评价，口碑数据有限</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict"><strong>总结：</strong>你有斯巴鲁，这套非常适合！DVP/401高速口+Fairview Mall+超低租金，设施媲美豪华公寓。地铁需依靠班车，但开车党完全不是问题。</div>
+  </div>
+
+  <!-- 5. Aria #717 -->
+  <div class="card good">
+    <div class="card-header">
+      <div>
+        <p class="card-title">⭐ #5 — Aria Condos, Unit 717</p>
+        <p class="card-subtitle">10 Bloorview Place, North York（Don Valley Village）</p>
+      </div>
+      <span class="badge good">推荐（养猫+安静）</span>
+    </div>
+    <div class="info-row">
+      <span class="info-chip">📐 570–3015 sqft（大户型）</span>
+      <span class="info-chip">💰 ~$2,800–3,100+/月</span>
+      <span class="info-chip">🏢 第7层 / 共18层</span>
+      <span class="info-chip">📅 2011年竣工（Menkes/Fernbrook）</span>
+      <span class="info-chip green">🌲 毗邻森林公园，极其安静</span>
+      <span class="info-chip green">🔒 优秀安保系统</span>
+    </div>
+    <div class="scores">
+      <div class="score-item"><div class="label">性价比</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">居住体验</div><div class="value s9">9</div></div>
+      <div class="score-item"><div class="label">安全性</div><div class="value s9">9</div></div>
+      <div class="score-item"><div class="label">交通便利</div><div class="value s6">6</div></div>
+      <div class="score-item"><div class="label">养猫友好</div><div class="value s9">9</div></div>
+      <div class="score-item"><div class="label">停车便利</div><div class="value s8">8</div></div>
+    </div>
+    <div class="total-score">综合评分：<span style="color:#6c5ce7;font-size:20px">8.0 / 10</span></div>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>✅ 优点</h4>
+        <ul>
+          <li>紧邻自然森林，景观极佳，猫咪喜欢看鸟</li>
+          <li>建筑安保系统评价极高</li>
+          <li>非常安静（独特地理位置）</li>
+          <li>单元面积普遍大（570 sqft起）</li>
+          <li>游泳池、健身房、媒体室等设施完善</li>
+          <li>单身女性居住感非常安心</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>❌ 注意</h4>
+        <ul>
+          <li>月租偏高</li>
+          <li>步行至Sheppard-Yonge地铁需10分钟以上</li>
+          <li>周边餐饮娱乐设施相对少</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict"><strong>总结：</strong>安全性和居住体验在所有10套中名列前茅。如果你希望住在安静的森林旁，又有车代步解决地铁不便的问题，这是养猫单身女性的理想之选。租金是主要障碍。</div>
+  </div>
+
+  <!-- 6. Plaza Royale #312 -->
+  <div class="card mid">
+    <div class="card-header">
+      <div>
+        <p class="card-title">⭐ #6 — Plaza Royale, Unit 312</p>
+        <p class="card-subtitle">872 Sheppard Avenue West, North York（Bathurst Manor）</p>
+      </div>
+      <span class="badge mid">一般推荐</span>
+    </div>
+    <div class="info-row">
+      <span class="info-chip">📐 592 sqft（1卧1浴）</span>
+      <span class="info-chip">💰 $2,300/月</span>
+      <span class="info-chip">🏢 第3层 / 共8层</span>
+      <span class="info-chip">📅 2009年竣工（Torbel Group）</span>
+      <span class="info-chip">🚇 近Sheppard West地铁站</span>
+      <span class="info-chip green">💸 维护费最低（$0.57/sqft）</span>
+    </div>
+    <div class="scores">
+      <div class="score-item"><div class="label">性价比</div><div class="value s8">8</div></div>
+      <div class="score-item"><div class="label">居住体验</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">安全性</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">交通便利</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">养猫友好</div><div class="value s8">8</div></div>
+      <div class="score-item"><div class="label">停车便利</div><div class="value s7">7</div></div>
+    </div>
+    <div class="total-score">综合评分：<span style="color:#fdcb6e;font-size:20px">7.3 / 10</span></div>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>✅ 优点</h4>
+        <ul>
+          <li>低层低密度（8层小楼），居住感较私密</li>
+          <li>592 sqft面积合理，养两猫够用</li>
+          <li>有健身房、桑拿、游戏室、屋顶露台</li>
+          <li>$2,300月租含较大面积，性价比不错</li>
+          <li>3楼低层，有猫不用担心坠落</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>❌ 注意</h4>
+        <ul>
+          <li>楼龄已15年，装修状态需确认</li>
+          <li>Bathurst Manor周边不如Yonge/Sheppard繁华</li>
+          <li>3层低楼层，女性独居隐私感略弱（需确认窗户朝向）</li>
+          <li>附近华人超市等配套不如Willowdale集中</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict"><strong>总结：</strong>中规中矩的选择。低层小楼更私密，租金合理，养猫方便。但周边生活配套和安全感不如Top 5强，适合喜欢低调安静居住环境的租户。</div>
+  </div>
+
+  <!-- 7. Emerald City #1401 -->
+  <div class="card mid">
+    <div class="card-header">
+      <div>
+        <p class="card-title">⭐ #7 — The Point at Emerald City, Unit 1401</p>
+        <p class="card-subtitle">38 Forest Manor Road, North York（Don Mills / Sheppard East）</p>
+      </div>
+      <span class="badge mid">一般推荐</span>
+    </div>
+    <div class="info-row">
+      <span class="info-chip">📐 约400–1699 sqft</span>
+      <span class="info-chip">💰 ~$2,725–3,200/月（2卧）</span>
+      <span class="info-chip">🏢 第14层 / 共24层</span>
+      <span class="info-chip">📅 2020年竣工（Almadev）</span>
+      <span class="info-chip green">🚇 步行至Don Mills地铁站</span>
+      <span class="info-chip yellow">⚠️ 管理口碑有问题</span>
+    </div>
+    <div class="scores">
+      <div class="score-item"><div class="label">性价比</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">居住体验</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">安全性</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">交通便利</div><div class="value s9">9</div></div>
+      <div class="score-item"><div class="label">养猫友好</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">停车便利</div><div class="value s7">7</div></div>
+    </div>
+    <div class="total-score">综合评分：<span style="color:#fdcb6e;font-size:20px">7.3 / 10</span></div>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>✅ 优点</h4>
+        <ul>
+          <li>2020年新楼，设施现代</li>
+          <li>步行至Don Mills地铁站</li>
+          <li>Fairview Mall、IKEA近在咫尺</li>
+          <li>维护费低（$0.79/sqft）</li>
+          <li>14层高视野好</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>❌ 注意</h4>
+        <ul>
+          <li>Emerald City楼群管理问题被多次投诉</li>
+          <li>Banbury-Don Mills地区2024-2025年犯罪率有所上升</li>
+          <li>租金相对较高（2卧$2,725–3,200）</li>
+          <li>大型综合楼群，人口密集，较嘈杂</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict"><strong>总结：</strong>地铁方便是最大优势，但管理口碑和区域犯罪上升趋势值得警惕。租金也偏高。如果特别在意地铁步行直达，可以考虑，但建议先查Emerald City具体投诉记录。</div>
+  </div>
+
+  <!-- 8. Broadway II #2801 -->
+  <div class="card mid">
+    <div class="card-header">
+      <div>
+        <p class="card-title">⭐ #8 — Broadway II Residences, Unit 2801</p>
+        <p class="card-subtitle">155 Beecroft Road, North York（Yonge / Sheppard）</p>
+      </div>
+      <span class="badge mid">谨慎考虑</span>
+    </div>
+    <div class="info-row">
+      <span class="info-chip">📐 489–1087 sqft</span>
+      <span class="info-chip">💰 ~$2,499+/月</span>
+      <span class="info-chip">🏢 第28层 / 共28层（顶层区域！）</span>
+      <span class="info-chip">📅 2004年竣工（Menkes）</span>
+      <span class="info-chip green">🚇 地下通道直达地铁！</span>
+      <span class="info-chip red">🐛 曾有床虱报告</span>
+    </div>
+    <div class="scores">
+      <div class="score-item"><div class="label">性价比</div><div class="value s6">6</div></div>
+      <div class="score-item"><div class="label">居住体验</div><div class="value s6">6</div></div>
+      <div class="score-item"><div class="label">安全性</div><div class="value s6">6</div></div>
+      <div class="score-item"><div class="label">交通便利</div><div class="value s10">10</div></div>
+      <div class="score-item"><div class="label">养猫友好</div><div class="value s6">6</div></div>
+      <div class="score-item"><div class="label">停车便利</div><div class="value s7">7</div></div>
+    </div>
+    <div class="total-score">综合评分：<span style="color:#e17055;font-size:20px">6.8 / 10</span></div>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>✅ 优点</h4>
+        <ul>
+          <li>地下通道直达地铁+Loblaws+电影院+图书馆，下雨天不用出门！</li>
+          <li>28层=绝佳视野</li>
+          <li>Yonge/Sheppard核心地段，华人生活配套最完善</li>
+          <li>游泳池、健身房、桑拿、24h礼宾</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>❌ 注意</h4>
+        <ul>
+          <li><strong>曾有床虱（bed bugs）报告</strong>——对养猫者尤为危险</li>
+          <li>管理团队不响应投诉，电梯频繁故障，桑拿损坏</li>
+          <li>楼龄20年，维护状态堪忧</li>
+          <li>28楼出行依赖电梯，而电梯问题严重</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict"><strong>总结：</strong>地铁交通是所有10套中最便利的，但床虱报告+管理失职+电梯问题对养猫的你来说风险较大。如果坚持要看，务必提前向房东确认近期pest control记录。</div>
+  </div>
+
+  <!-- 9. Liv Lofts #713 -->
+  <div class="card mid">
+    <div class="card-header">
+      <div>
+        <p class="card-title">⭐ #9 — Liv Lofts, Unit 713</p>
+        <p class="card-subtitle">75 The Donway West, North York（Banbury / Don Mills）</p>
+      </div>
+      <span class="badge mid">一般</span>
+    </div>
+    <div class="info-row">
+      <span class="info-chip">📐 394–1325 sqft（Loft风格）</span>
+      <span class="info-chip">💰 ~$2,000+/月</span>
+      <span class="info-chip">🏢 第7层 / 共14层</span>
+      <span class="info-chip">📅 2015年竣工（FRAM+Slokker）</span>
+      <span class="info-chip yellow">🚌 仅公交（无地铁）</span>
+      <span class="info-chip green">🏙️ 独特Loft风格</span>
+    </div>
+    <div class="scores">
+      <div class="score-item"><div class="label">性价比</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">居住体验</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">安全性</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">交通便利</div><div class="value s5">5</div></div>
+      <div class="score-item"><div class="label">养猫友好</div><div class="value s8">8</div></div>
+      <div class="score-item"><div class="label">停车便利</div><div class="value s7">7</div></div>
+    </div>
+    <div class="total-score">综合评分：<span style="color:#e17055;font-size:20px">6.8 / 10</span></div>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>✅ 优点</h4>
+        <ul>
+          <li>Loft风格独特，高天花板空间感好，猫咪可以爬高</li>
+          <li>月租$2,000起，较为实惠</li>
+          <li>屋顶露台、健身房、礼宾</li>
+          <li>小楼栋（171户），社区感强</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>❌ 注意</h4>
+        <ul>
+          <li>附近无地铁，只有公交（最近地铁需转线）</li>
+          <li>Don Mills/Lawrence区域相对安静但配套平淡</li>
+          <li>有车才能充分发挥此处优势</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict"><strong>总结：</strong>Loft风格有独特魅力，适合爱好艺术感居住空间的人。但交通是硬伤——没有地铁直达，日常通勤靠车或公交。你有斯巴鲁可以弥补，但若经常需要地铁出行则不推荐。</div>
+  </div>
+
+  <!-- 10. Stonecastle #104 -->
+  <div class="card low">
+    <div class="card-header">
+      <div>
+        <p class="card-title">⚠️ #10 — Stonecastle Condos, Unit 104</p>
+        <p class="card-subtitle">2615 Keele Street, North York（Maple Leaf）</p>
+      </div>
+      <span class="badge low">不推荐</span>
+    </div>
+    <div class="info-row">
+      <span class="info-chip">📐 约500–600 sqft</span>
+      <span class="info-chip">💰 ~$2,200/月（或售价$450,000）</span>
+      <span class="info-chip red">🏢 第1层（地面层）</span>
+      <span class="info-chip">📅 2011年竣工</span>
+      <span class="info-chip red">❌ 无电梯</span>
+      <span class="info-chip red">💸 水电费自理</span>
+    </div>
+    <div class="scores">
+      <div class="score-item"><div class="label">性价比</div><div class="value s5">5</div></div>
+      <div class="score-item"><div class="label">居住体验</div><div class="value s5">4</div></div>
+      <div class="score-item"><div class="label">安全性</div><div class="value s6">6</div></div>
+      <div class="score-item"><div class="label">交通便利</div><div class="value s5">5</div></div>
+      <div class="score-item"><div class="label">养猫友好</div><div class="value s7">7</div></div>
+      <div class="score-item"><div class="label">停车便利</div><div class="value s8">8</div></div>
+    </div>
+    <div class="total-score">综合评分：<span style="color:#d63031;font-size:20px">5.8 / 10</span></div>
+    <div class="pros-cons">
+      <div class="pros">
+        <h4>✅ 优点</h4>
+        <ul>
+          <li>地面层适合养猫（不用担心跌落风险）</li>
+          <li>Maple Leaf区犯罪率低于全国均值24%</li>
+          <li>有地面停车位，对有车者方便</li>
+          <li>近401高速（仅350米）</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>❌ 注意</h4>
+        <ul>
+          <li><strong>无电梯</strong>——大件家具/搬运极不便</li>
+          <li><strong>一楼单元隐私安全感极低</strong>，不适合单身女性</li>
+          <li>水电费自理，实际总支出高于$2,200</li>
+          <li>疑似该单元为售价$450K，需确认是否可租</li>
+          <li>周边无地铁，依赖公交或开车</li>
+          <li>楼栋规模小，设施有限</li>
+        </ul>
+      </div>
+    </div>
+    <div class="verdict"><strong>总结：</strong>综合来看最不推荐。一楼单元对单身女性安全隐患较大，无电梯使用不便，水电自理增加开销，交通也不便捷。另外需要先确认这套是否真的是出租而非出售。</div>
+  </div>
+
+  <!-- 最终建议 -->
+  <div class="summary-box" style="border-left: 5px solid #00b894;">
+    <h2>🎯 针对你的最终推荐</h2>
+    <p style="font-size:14px;line-height:1.9">
+      综合考虑你是<strong>单身中国女性</strong>、<strong>有斯巴鲁</strong>、<strong>养两只猫</strong>，以下是我的优先建议：
+    </p>
+    <p style="font-size:14px;line-height:1.9">
+      <strong>🥇 首选：38 Monte Kwinter Ct #1002（The Rocket）</strong> — 安全性最高（犯罪率全市最低之一）、新楼、地铁方便、价格合理，综合最均衡。<br>
+      <strong>🥈 次选：28 Harrison Garden Blvd #1006（Spectrum）</strong> — 如果你重视生活品质和娱乐设施，保龄球+泳池+影院无可比拟，价格也不贵。<br>
+      <strong>🥉 第三：275 Yorkland Rd #1004（Herons Hill）</strong> — 有车族利器，超大车行便利+低租金+好设施，工作日班车补充地铁短板。<br>
+      <strong>备选（预算紧）：160 Flemington Rd #322（Yorkdale）</strong> — 租金最低+地铁1分钟，但需确认单元面积够两猫生活。
+    </p>
+    <p style="font-size:13px;color:#636e72;margin-top:12px">
+      ⚠️ <strong>看房前必做清单：</strong>确认宠物政策（两猫）、停车位是否含在租金内或额外多少、询问是否有pest control近期记录（尤其Broadway II）、核实具体单元面积和朝向。
+    </p>
+  </div>
+
+  <div class="footer">
+    数据收集时间：2026年3月 · 来源：Condos.ca, Strata.ca, Zolo.ca, AreaVibes, Toronto Police Open Data 等<br>
+    本报告仅供参考，具体租金和条款以实际合同为准。
+  </div>
+
+</div>
+</body>
+</html>
